@@ -1,6 +1,6 @@
 /* atmo v3 
 This shader code is given to you by Noah Leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.
-By using the code in any project, thy must reference Noah Lee in the credits.
+By using the code in any project, thy must reference Noah Lee in the credits. Licensed under the "MIT License".
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software with little restriction, including with some limitation (credit Noah Lee) ; the rights to use, copy, modify, merge copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
