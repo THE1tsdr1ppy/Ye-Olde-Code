@@ -1,12 +1,4 @@
-/* atmo v3 
-This shader code is given to you by Noah Leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.
-By using the code in any project, thy must reference Noah Lee in the credits. Licensed under the "MIT License".
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software with little restriction, including with some limitation (credit Noah Lee) ; the rights to use, copy, modify, merge copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/* atmo v3 Licensed under MIT license*/
 Shader "Custom/PlanetAtmosphere"
 {
     Properties
@@ -342,19 +334,9 @@ Shader "Custom/PlanetAtmosphere"
         
         // Clamp atmosphere to scene geometry
         if (hasSceneGeometry)
-{
-    // Convert scene depth to ray distance for proper comparison
-    float sceneRayDistance = linearDepth / length(rayDir);
-    
-    // Compare in ray distance space with threshold
-    if (tAtmosphereNear > sceneRayDistance + depthEpsilon)
-    {
-        discard; // Atmosphere is behind scene geometry
-    }
-    
-    // Clamp atmosphere to scene geometry with threshold
-    tAtmosphereFar = min(tAtmosphereFar, sceneRayDistance - depthEpsilon);
-}
+        {
+            tAtmosphereFar = min(tAtmosphereFar, sceneRayDistance - depthEpsilon);
+        }
         
         // Exit if no valid atmosphere segment to render
         if (tAtmosphereNear >= tAtmosphereFar)
@@ -432,9 +414,6 @@ Shader "Custom/PlanetAtmosphere"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            #pragma multi_compile _ DEPTH_PREPASS
-            #pragma multi_compile _ USE_WORLD_SPACE
-            #pragma multi_compile _ ENABLE_EARLY_DEPTH_TEST
             ENDHLSL
         }
     }
