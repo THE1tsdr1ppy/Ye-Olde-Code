@@ -1,4 +1,12 @@
-/* atmo v3 Licensed under MIT license*/
+/* atmo v3 
+This shader code is given to you by Noah Leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.
+By using the code in any project, thy must reference Noah Lee in the credits.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software with little restriction, including with some limitation (credit Noah Lee) ; the rights to use, copy, modify, merge copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 Shader "Custom/PlanetAtmosphere"
 {
     Properties
@@ -51,7 +59,7 @@ Shader "Custom/PlanetAtmosphere"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureXR.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/RenderPass/CustomPass/CustomPassCommon.hlsl"
-
+    #define pi 3.14159265358979323846264338327  
     float4 _PlanetCenter;
     float _PlanetRadius;
     float _AtmosphereHeight;
@@ -171,13 +179,13 @@ Shader "Custom/PlanetAtmosphere"
 
     float RayleighPhase(float cosTheta)
     {
-        return (3.0 / (16.0 * 3.14159265359)) * (1.0 + cosTheta * cosTheta);
+        return (3.0 / (16.0 * pi)) * (1.0 + cosTheta * cosTheta);
     }
 
     float MiePhase(float cosTheta, float g)
     {
         float g2 = g * g;
-        return (1.0 / (4.0 * 3.14159265359)) * ((1.0 - g2) / pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
+        return (1.0 / (4.0 * pi)) * ((1.0 - g2) / pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
     }
 
     float CalculateOpticalDepth(float3 startPos, float3 endPos, int steps)
