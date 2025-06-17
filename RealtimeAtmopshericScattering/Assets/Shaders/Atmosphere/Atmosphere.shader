@@ -1,12 +1,4 @@
-/* atmo v3 
-This shader code is given to you by Noah Leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.
-By using the code in any project, thy must reference Noah Lee in the credits.
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software with little restriction, including with some limitation (credit Noah Lee) ; the rights to use, copy, modify, merge copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 Shader "Custom/PlanetAtmosphere"
 {
     Properties
@@ -47,8 +39,14 @@ Shader "Custom/PlanetAtmosphere"
         _SpaceVisibilityNight("Space Visibility Night", Range(0, 1)) = 0.9
         _SpaceVisibilityTransitionSharpness("Space Visibility Transition Sharpness", Range(1, 10)) = 5.0
         _DepthThreshold("Depth Threshold", Range(0.0001, 0.1)) = 0.001
+        
+        // New optimization parameters
+        _MaxSteps("Max Steps", Range(32, 512)) = 256
+        _MinSteps("Min Steps", Range(16, 128)) = 64
+        _StepOptimizationDistance("Step Optimization Distance", Float) = 1000.0
+        _QualityLevel("Quality Level", Range(0, 2)) = 1
+        _MaxStepSize("Max Step Size Factor", Range(0.005, 0.05)) = 0.01
     }
-
 
     HLSLINCLUDE
     #pragma target 4.5
@@ -59,7 +57,11 @@ Shader "Custom/PlanetAtmosphere"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
     #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureXR.hlsl"
     #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/RenderPass/CustomPass/CustomPassCommon.hlsl"
-    #define pi 3.14159265358979323846264338327  
+    
+    #define PI 3.14159265358979323846264338327  
+    #define UNITY_REVERSED_Z 1 
+
+    // Existing properties
     float4 _PlanetCenter;
     float _PlanetRadius;
     float _AtmosphereHeight;
@@ -97,6 +99,13 @@ Shader "Custom/PlanetAtmosphere"
     float _CameraDistance;
     float4 _CameraPosHigh;
     float4 _CameraPosLow;
+    
+    // New optimization properties
+    float _MaxSteps;
+    float _MinSteps;
+    float _StepOptimizationDistance;
+    int _QualityLevel;
+    float _MaxStepSize;
 
     struct AtmosphereAttributes
     {
@@ -110,7 +119,7 @@ Shader "Custom/PlanetAtmosphere"
         float2 texcoord : TEXCOORD0;
         float3 viewVector : TEXCOORD1;
         float3 worldPos : TEXCOORD2;
-        float viewZ : TEXCOORD3; // Add view space Z for depth
+        float viewZ : TEXCOORD3;
         UNITY_VERTEX_OUTPUT_STEREO
     };
 
@@ -133,7 +142,6 @@ Shader "Custom/PlanetAtmosphere"
         output.viewVector = worldPos.xyz - _WorldSpaceCameraPos;
         output.worldPos = worldPos.xyz;
         
-        // Calculate view space Z for depth writing
         float4 viewPos = mul(UNITY_MATRIX_V, float4(worldPos.xyz, 1.0));
         output.viewZ = -viewPos.z;
         
@@ -179,13 +187,13 @@ Shader "Custom/PlanetAtmosphere"
 
     float RayleighPhase(float cosTheta)
     {
-        return (3.0 / (16.0 * pi)) * (1.0 + cosTheta * cosTheta);
+        return (3.0 / (16.0 * PI)) * (1.0 + cosTheta * cosTheta);
     }
 
     float MiePhase(float cosTheta, float g)
     {
         float g2 = g * g;
-        return (1.0 / (4.0 * pi)) * ((1.0 - g2) / pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
+        return (1.0 / (4.0 * PI)) * ((1.0 - g2) / pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5));
     }
 
     float CalculateOpticalDepth(float3 startPos, float3 endPos, int steps)
@@ -244,6 +252,47 @@ Shader "Custom/PlanetAtmosphere"
         return camDistanceFromCenter > (_PlanetRadius + _AtmosphereHeight);
     }
 
+    // Improved step calculation with zoom-in handling
+    int CalculateOptimalSteps(float3 rayOrigin, float atmosphereOuterRadius, float rayLength)
+{
+    float camDistanceFromCenter = length(rayOrigin - GetPlanetCenter());
+    float heightRatio = (camDistanceFromCenter - _PlanetRadius) / _AtmosphereHeight;
+    
+    // Base on camera distance from surface
+    float distanceFromSurface = camDistanceFromCenter - _PlanetRadius;
+    float surfaceProximity = saturate(1.0 - distanceFromSurface / (_AtmosphereHeight * 0.5));
+    
+    // Calculate adaptive steps based on multiple factors
+    int baseSteps;
+    
+    if (IsCameraOutsideAtmosphere())
+    {
+        // When outside, scale steps with distance but keep minimum near atmosphere
+        float distScale = saturate(distanceFromSurface / (_AtmosphereHeight * 5.0));
+        baseSteps = (int)lerp(_MaxSteps, _MinSteps, distScale);
+    }
+    else
+    {
+        // Inside atmosphere - prioritize quality when near surface
+        baseSteps = (int)lerp(_MaxSteps * 1.5, _MaxSteps, saturate(heightRatio));
+    }
+    
+    // Apply strong boost when very close to surface
+    baseSteps = (int)lerp(baseSteps, _MaxSteps * 2.0, pow(surfaceProximity, 3.0));
+    
+    // Apply quality level scaling
+    float qualityMultiplier = 1.0;
+    switch (_QualityLevel)
+    {
+        case 0: qualityMultiplier = 0.5; break;
+        case 1: qualityMultiplier = 0.75; break;
+        case 2: qualityMultiplier = 1.0; break;
+    }
+    
+    // Ensure we stay within reasonable bounds
+    return clamp((int)(baseSteps * qualityMultiplier), (int)_MinSteps, (int)_MaxSteps * 2);
+}
+
     float3 CalculateScattering(float3 startPos, float3 endPos, float3 sunDir, int steps)
     {
         float3 rayDir = normalize(endPos - startPos);
@@ -255,6 +304,9 @@ Shader "Custom/PlanetAtmosphere"
         
         bool viewingFromSpace = IsCameraOutsideAtmosphere();
         float mieSpaceMultiplier = viewingFromSpace ? _MieScatteringFromSpace : 1.0;
+        
+        // Adaptive step optimization for sun ray marching
+        int sunSteps = max(4, steps / 8);
         
         for (int i = 0; i < steps; i++)
         {
@@ -272,8 +324,8 @@ Shader "Custom/PlanetAtmosphere"
                 float rayleighPhase = RayleighPhase(cosTheta);
                 float miePhase = MiePhase(cosTheta, _MieAnisotropy);
                 
-                float3 sunTransmittance = CalculateSunPathTransmittance(pos, sunDir, 8);
-                float viewOpticalDepth = CalculateOpticalDepth(startPos, pos, max(8, steps/4));
+                float3 sunTransmittance = CalculateSunPathTransmittance(pos, sunDir, sunSteps);
+                float viewOpticalDepth = CalculateOpticalDepth(startPos, pos, max(4, steps/8));
                 float3 viewTransmittance = exp(-viewOpticalDepth * _RayleighScatteringCoeff);
                 float3 totalTransmittance = sunTransmittance * viewTransmittance;
                 
@@ -291,109 +343,177 @@ Shader "Custom/PlanetAtmosphere"
         
         return (totalRayleigh + totalMie) * _ScatteringPower * (1.0 + sunContribution);
     }
+    // Additional helper function for better geometry detection
+bool IsPixelOccludedByGeometry(float2 screenPos, float atmosphereDistance)
+{
+    float rawDepth = LoadCameraDepth(screenPos);
+    float linearDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
+    
+    // More sophisticated occlusion test
+    return (rawDepth < 0.99f) && (linearDepth < atmosphereDistance - 0.00001f);
+}
+
+// Improved ray-sphere intersection with better numerical stability
+bool RaySphereIntersectImproved(float3 rayOrigin, float3 rayDir, float3 sphereCenter, float sphereRadius, out float t0, out float t1)
+{
+    float3 L = sphereCenter - rayOrigin;
+    float tca = dot(L, rayDir);
+    float d2 = dot(L, L) - tca * tca;
+    float radiusSquared = sphereRadius * sphereRadius;
+    
+    if (d2 > radiusSquared)
+    {
+        t0 = t1 = -1.0f;
+        return false;
+    }
+    
+    float thc = sqrt(radiusSquared - d2);
+    t0 = tca - thc;
+    t1 = tca + thc;
+    
+    // Handle case where ray starts inside sphere
+    if (t0 < 0.0f && t1 > 0.0f)
+    {
+        t0 = 0.0f;
+    }
+    
+    return t1 > 0.0f;
+}
 
     FragmentOutput Frag(AtmosphereVaryings input)
+{
+    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+    
+    FragmentOutput output;
+    
+    // -- Step 1: Get accurate distance to scene geometry --
+    float rawDepth = LoadCameraDepth(input.positionCS.xy);
+    float linearDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
+    
+    // Correct linear depth (distance from camera plane) to true distance along the view ray
+    float rayDistToLinearDepthRatio = length(input.viewVector) / input.viewZ;
+    float sceneDistance = linearDepth * rayDistToLinearDepthRatio;
+    
+    // Check if the pixel has any scene geometry rendered to it (skybox depth is 1.0)
+    bool hasSceneGeometry = rawDepth < 1.0f;
+    if (!hasSceneGeometry)
     {
-        UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-        
-        FragmentOutput output;
-        
-        // Get scene depth - use linear depth for more stable comparisons
-        float rawDepth = LoadCameraDepth(input.positionCS.xy);
-        float linearDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
-        
-        float3 rayOrigin = _WorldSpaceCameraPos;
-        float3 rayDir = normalize(input.viewVector);
-        float3 sunDir = normalize(_SunPosition.xyz - GetPlanetCenter());
-        
-        // Calculate atmosphere intersection
-        float tAtmosphereNear, tAtmosphereFar;
-        float atmosphereOuterRadius = _PlanetRadius + _AtmosphereHeight;
-        bool intersectsAtmosphere = RaySphereIntersect(rayOrigin, rayDir, GetPlanetCenter(), atmosphereOuterRadius, tAtmosphereNear, tAtmosphereFar);
-        
-        if (!intersectsAtmosphere)
-        {
-            discard;
-        }
-        
-        // Ensure we start from camera if inside atmosphere
-        tAtmosphereNear = max(0.0, tAtmosphereNear);
-        
-        // Check for planet intersection
-        float tPlanetNear, tPlanetFar;
-        bool intersectsPlanet = RaySphereIntersect(rayOrigin, rayDir, GetPlanetCenter(), _PlanetRadius, tPlanetNear, tPlanetFar);
-        
-        if (intersectsPlanet && tPlanetNear > 0)
-        {
-            tAtmosphereFar = min(tAtmosphereFar, tPlanetNear);
-        }
-        
-        // Handle scene depth comparison with better precision
-        bool hasSceneGeometry = rawDepth < 0.999999; // More precise far plane check
-        float sceneRayDistance = hasSceneGeometry ? linearDepth : 1e10;
-        
-        // More robust depth comparison using small epsilon
-        const float depthEpsilon = 0.001;
-        
-        if (hasSceneGeometry && (tAtmosphereNear > sceneRayDistance + depthEpsilon))
-        {
-            discard; // Atmosphere is behind scene geometry
-        }
-        
-        // Clamp atmosphere to scene geometry
-        if (hasSceneGeometry)
-        {
-            tAtmosphereFar = min(tAtmosphereFar, sceneRayDistance - depthEpsilon);
-        }
-        
-        // Exit if no valid atmosphere segment to render
-        if (tAtmosphereNear >= tAtmosphereFar)
-        {
-            discard;
-        }
-        
-        // Calculate scattering between tAtmosphereNear and tAtmosphereFar
-        float3 startPos = rayOrigin + rayDir * tAtmosphereNear;
-        float3 endPos = rayOrigin + rayDir * tAtmosphereFar;
-        
-        int steps = IsCameraOutsideAtmosphere() ? 128 : 96;
-        float3 atmosphereColor = CalculateScattering(startPos, endPos, sunDir, steps);
-        
-        // Calculate atmosphere depth more robustly
-        float atmosphereDistance = tAtmosphereNear;
-        
-        // Convert to clip space depth properly
-        float4 ndcPos = float4(input.positionCS.xy / input.positionCS.w, 0, 1);
-        ndcPos.z = (atmosphereDistance - _ProjectionParams.y) / (_ProjectionParams.z - _ProjectionParams.y);
-        
-        // Use raw depth buffer format
-        #if UNITY_REVERSED_Z
-            float atmosphereDepth = 1.0 - ndcPos.z;
-        #else
-            float atmosphereDepth = ndcPos.z;
-        #endif
-        
-        // Choose final depth value
-        float finalDepth = hasSceneGeometry ? min(atmosphereDepth, rawDepth) : atmosphereDepth;
-        
-        // Clamp depth to valid range
-        finalDepth = saturate(finalDepth);
-        
-        // Improved alpha calculation
-        float atmosphereIntensity = length(atmosphereColor);
-        float alpha = saturate(atmosphereIntensity * 0.3);
-        
-        // Early exit for very transparent pixels
-        if (alpha < 0.001)
-        {
-            discard;
-        }
-        
-        output.color = float4(atmosphereColor, alpha);
-        output.depth = finalDepth;
-        
-        return output;
+        sceneDistance = 1e10; // Use a large number for 'infinity'
     }
+    
+    // -- Step 2: Calculate ray marching bounds for the atmosphere --
+    float3 rayOrigin = _WorldSpaceCameraPos;
+    float3 rayDir = normalize(input.viewVector);
+    float3 sunDir = normalize(_SunPosition.xyz - GetPlanetCenter());
+    
+    // Calculate atmosphere intersections using the more robust function
+    float tAtmosphereNear, tAtmosphereFar;
+    float atmosphereOuterRadius = _PlanetRadius + _AtmosphereHeight;
+    bool intersectsAtmosphere = RaySphereIntersectImproved(rayOrigin, rayDir, GetPlanetCenter(), 
+                                                           atmosphereOuterRadius, tAtmosphereNear, tAtmosphereFar);
+    
+    if (!intersectsAtmosphere)
+    {
+        discard;
+    }
+    
+    // Calculate planet intersections
+    float tPlanetNear, tPlanetFar;
+    bool intersectsPlanet = RaySphereIntersectImproved(rayOrigin, rayDir, GetPlanetCenter(), 
+                                                       _PlanetRadius, tPlanetNear, tPlanetFar);
+    
+    // Clip atmosphere ray against the planet's surface
+    if (intersectsPlanet)
+    {
+        tAtmosphereFar = min(tAtmosphereFar, tPlanetNear);
+    }
+    
+    // -- Step 3: Clip atmosphere ray against scene geometry --
+    float atmosphereStart = tAtmosphereNear;
+    float atmosphereEnd = tAtmosphereFar;
+    
+    // Case 1: Scene geometry is entirely in front of the atmosphere
+    if (hasSceneGeometry && sceneDistance < atmosphereStart - 0.001f)
+    {
+        discard;
+    }
+    
+    // Case 2: Scene geometry intersects the atmosphere volume
+    if (hasSceneGeometry && sceneDistance < atmosphereEnd)
+    {
+        // Shorten the ray to stop at the geometry
+        atmosphereEnd = sceneDistance;
+    }
+
+    // Ensure we still have a valid segment to march
+    if (atmosphereStart >= atmosphereEnd)
+    {
+        discard;
+    }
+
+    // -- Step 4: Perform ray marching --
+    float3 startPos = rayOrigin + rayDir * atmosphereStart;
+    float3 endPos = rayOrigin + rayDir * atmosphereEnd;
+    float rayLength = atmosphereEnd - atmosphereStart;
+    
+    if (rayLength < 0.01f)
+    {
+        discard;
+    }
+    
+    int steps = CalculateOptimalSteps(rayOrigin, atmosphereOuterRadius, rayLength);
+    float3 atmosphereColor = CalculateScattering(startPos, endPos, sunDir, steps);
+    
+    // -- Step 5: Correctly calculate depth and alpha --
+    
+    // Determine the final depth value for the Z-buffer
+    float finalDepthValue;
+    bool clippedByGeometry = hasSceneGeometry && (sceneDistance <= atmosphereEnd + 0.001f);
+    
+    if (clippedByGeometry)
+    {
+        // If clipped by geometry, use its depth to prevent Z-fighting.
+        finalDepthValue = rawDepth;
+    }
+    else
+    {
+        // Otherwise, calculate depth from the ray's end point.
+        float3 depthWorldPos = rayOrigin + rayDir * atmosphereEnd;
+        float4 clipPos = mul(UNITY_MATRIX_VP, float4(depthWorldPos, 1.0));
+        finalDepthValue = clipPos.z / clipPos.w; // Correct perspective depth [0,1] for reversed-Z
+    }
+
+    // Calculate a physically-based alpha from optical depth
+    float opticalDepth = CalculateOpticalDepth(startPos, endPos, 16); // Low sample count for alpha
+    float3 transmittance = exp(-opticalDepth * _RayleighScatteringCoeff * 0.1f); // Use a fraction of scattering for alpha
+    float avgTransmittance = (transmittance.r + transmittance.g + transmittance.b) / 3.0;
+    float finalAlpha = 1.0 - avgTransmittance;
+
+    // Fade out alpha for very thin atmosphere slices to reduce limb aliasing
+    finalAlpha *= saturate(rayLength / (_AtmosphereHeight * 0.05f));
+    
+    // Smoothly fade out when clipped by geometry
+    if (clippedByGeometry)
+    {
+        float totalPossibleLength = tAtmosphereFar - tAtmosphereNear;
+        if (totalPossibleLength > 0.01f) {
+            float clipFactor = saturate((sceneDistance - tAtmosphereNear) / totalPossibleLength);
+            finalAlpha *= clipFactor * clipFactor; // quadratic falloff for smoothness
+        } else {
+            finalAlpha = 0;
+        }
+    }
+    
+    if (finalAlpha < 0.001)
+    {
+        discard;
+    }
+    
+    output.color = float4(atmosphereColor, finalAlpha);
+    output.depth = saturate(finalDepthValue);
+    
+    return output;
+}
     ENDHLSL
 
     SubShader
@@ -402,7 +522,7 @@ Shader "Custom/PlanetAtmosphere"
         {
             "RenderType" = "Transparent"
             "RenderPipeline" = "HDRenderPipeline"
-            "Queue" = "Transparent-100"
+            "Queue" = "Transparent-50"
         }
         
         Pass
@@ -416,12 +536,13 @@ Shader "Custom/PlanetAtmosphere"
             
             ZWrite On
             ZTest LEqual
-            Blend One OneMinusSrcAlpha  // Pre-multiplied alpha blend mode
+            Blend One OneMinusSrcAlpha
             Cull Off
             
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
+            
             ENDHLSL
         }
     }
