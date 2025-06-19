@@ -3,8 +3,9 @@ These are a few things that Drippy Development worked on from Sept. 3 2024 -> Ju
 1. Tralalero Tralala internet browser (Started when meme was funny) Status : UNFINISHED. VERY BUGGY.
 2. C# Github based file updater (NOT PRESENT HERE) Status : STABLE
 3. OpenGL Minecraft Clone (One of many attempts... Most complete attempt of ours somehow...) status : Unfinished, stable, future updates coming.
+4. Realtime Atmospheric Scattering for Unity 6000 (there are a few issues, will fix sometime...) status : 99% done, stable.
 
-This is all early source code here for reference. Source here won't be updated. Might be updated in "Best Of 8th Grade" post next year. Time really does fly. 
+This is all early source code here for reference. Source code here won't be updated. Future source code will be in the "Best Of 8th Grade" post next year. Don't worry! Time really does fly. 
 
 Worked on by : 
 ROLE               NAME                HANDLE                PLATFORM
