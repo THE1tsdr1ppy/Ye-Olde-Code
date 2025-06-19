@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "dgSpecHash": "dN57V95vasY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\acer\\source\\OpenGLMinecraftClone\\OpenGLMinecraftClone.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\acer\\.nuget\\packages\\cppsharp.runtime\\1.0.45.22293\\cppsharp.runtime.1.0.45.22293.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\dearimgui\\1.89.3\\dearimgui.1.89.3.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\imgui.net\\1.91.6.1\\imgui.net.1.91.6.1.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\libnoise\\0.2.0\\libnoise.0.2.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.5\\microsoft.win32.systemevents.9.0.5.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk\\4.9.4\\opentk.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.audio.openal\\4.9.4\\opentk.audio.openal.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.compute\\4.9.4\\opentk.compute.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.core\\4.9.4\\opentk.core.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.glcontrol\\3.1.0\\opentk.glcontrol.3.1.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.graphics\\4.9.4\\opentk.graphics.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.input\\4.9.4\\opentk.input.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.mathematics\\4.9.4\\opentk.mathematics.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.redist.glfw\\3.4.0.44\\opentk.redist.glfw.3.4.0.44.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.windowing.common\\4.9.4\\opentk.windowing.common.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.windowing.desktop\\4.9.4\\opentk.windowing.desktop.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\opentk.windowing.graphicslibraryframework\\4.9.4\\opentk.windowing.graphicslibraryframework.4.9.4.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\simplexnoise\\2.0.0\\simplexnoise.2.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\sixlabors.imagesharp\\3.1.8\\sixlabors.imagesharp.3.1.8.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\stbimagesharp\\2.30.15\\stbimagesharp.2.30.15.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.drawing.common\\9.0.5\\system.drawing.common.9.0.5.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.26100.57\\microsoft.windows.sdk.net.ref.10.0.26100.57.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "message": "Package 'LibNoise 0.2.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net9.0-windows10.0.26100'. This package may not be fully compatible with your project.",
+      "projectPath": "C:\\Users\\acer\\source\\OpenGLMinecraftClone\\OpenGLMinecraftClone.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\acer\\source\\OpenGLMinecraftClone\\OpenGLMinecraftClone.csproj",
+      "libraryId": "LibNoise",
+      "targetGraphs": [
+        "net9.0-windows10.0.26100"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "message": "Package 'OpenTK.GLControl 3.1.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net9.0-windows10.0.26100'. This package may not be fully compatible with your project.",
+      "projectPath": "C:\\Users\\acer\\source\\OpenGLMinecraftClone\\OpenGLMinecraftClone.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\acer\\source\\OpenGLMinecraftClone\\OpenGLMinecraftClone.csproj",
+      "libraryId": "OpenTK.GLControl",
+      "targetGraphs": [
+        "net9.0-windows10.0.26100"
+      ]
+    }
+  ]
+}
