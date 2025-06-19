@@ -5,7 +5,7 @@ These are a few things that Drippy Development worked on from Sept. 3 2024 -> Ju
 3. OpenGL Minecraft Clone (One of many attempts... Most complete attempt of ours somehow...) status : Unfinished, stable, future updates coming.
 4. Realtime Atmospheric Scattering for Unity 6000 (there are a few issues, will fix sometime...) status : 99% done, stable.
 
-This is all early source code here for reference. Source code here won't be updated. Future source code will be in the "Best Of 8th Grade" post next year. Don't worry! Time really does fly. 
+This is all early source code here for reference. Source code here won't be updated. Future source code will be in the "Best Of 8th Grade" post next year. Don't worry! Time really does fly. Some code may be found in another repository.
 
 Worked on by : 
 ROLE               NAME                HANDLE                PLATFORM
