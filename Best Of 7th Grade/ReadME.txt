@@ -10,7 +10,7 @@ Worked on by :
 ROLE               NAME                HANDLE                PLATFORM
 Programmer         Noah                @1tsdr1ppy            Discord, Youtube
 Programmer/Artist  Jayden              @Nonynz               Discord, Youtube
-Meme Consultant    Yangjie             @yourlocalrussianukrain        Discord
+Meme Consultant    Yangjie             @yourlocalrussianukraine       Discord
 Bug Summoner       C#                  @dotnet               Twitter 
 
 Special thanks to:
