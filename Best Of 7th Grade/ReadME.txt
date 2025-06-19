@@ -2,7 +2,7 @@ These are a few things that Drippy Development worked on from Sept. 3 2024 -> Ju
 
 1. Tralalero Tralala internet browser (Started when meme was funny) Status : UNFINISHED. VERY BUGGY.
 2. C# Github based file updater (NOT PRESENT HERE) Status : STABLE
-3. OpenGL Minecraft Clone (One of many attempts... Most complete somehow...) status : Unfinished, stable, future updates coming.
+3. OpenGL Minecraft Clone (One of many attempts... Most complete attempt of ours somehow...) status : Unfinished, stable, future updates coming.
 
 This is all early source code here for reference. Source here won't be updated. Might be updated in "Best Of 8th Grade" post next year. Time really does fly. 
 
