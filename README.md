@@ -2,6 +2,11 @@
 A lot of the things my friends and I where up to when we were minors. This will probably resurface as I dig through old memories and bits of nostalgia. Here are a few of the more 'interesting' things we've done.
 
 Worked on by : 
+| Role          | Name          | Handle         | Platform     |
+| ------------- | ------------- |----------------|--------------|
+| Programmer    | Noah          |   @1tsdr1ppy   | Discord, YT  |
+| Content Cell  | Content Cell  |                |              |
+
 ROLE               NAME                HANDLE                PLATFORM
 Programmer         Noah                @1tsdr1ppy            Discord, Youtube
 Programmer/Artist  Jayden              @Nonynz               Discord, Youtube
