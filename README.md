@@ -1,4 +1,3 @@
-# Ye-Olde-Code
 A lot of the things my friends and I where up to when we were minors. This will probably resurface as I dig through old memories and bits of nostalgia. Here are a few of the more 'interesting' things we've done.
 
 ![alt text](https://raw.githubusercontent.com/THE1tsdr1ppy/Ye-Olde-Code/refs/heads/main/DD256.png)
