@@ -10,4 +10,3 @@ Programmer/Artist  Jayden              @Nonynz               Discord, Youtube
 Meme Consultant    Yangjie             @yourlocalrussianukraine       Discord
 Comedic Relief     Gavin               We don't know :(      We don't know :(
 Certified Idiot    Declan              We don't know :(      We don't know :(
-
